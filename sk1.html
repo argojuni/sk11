@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMPUTER RUSH: 2 PLAYER BATTLE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+            color: #f8fafc;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.6);
+        }
+        .neon-glow-orange {
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.6);
+        }
+        .arcade-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        .arcade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+        .arcade-btn:active {
+            transform: translateY(1px);
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+        .pulse-card {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <header class="w-full py-4 px-6 glass-panel border-b border-white/10 flex justify-between items-center z-20">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-extrabold text-xl neon-glow-cyan">
+                💻
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg md:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-300">
+                    COMPUTER RUSH
+                </h1>
+                <p class="text-xs text-slate-400">2 PLAYER BATTLE — KELAS VIII SMP</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleAudio()" id="soundToggleBtn" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-sm font-semibold border border-white/10 transition flex items-center gap-1.5">
+                🔊 <span id="soundStatusText">Suara: On</span>
+            </button>
+            <button onclick="openInstructions()" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-sm font-semibold border border-white/10 transition">
+                📖 Cara Bermain
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-4 relative">
+
+        <!-- VIEW 1: MENU UTAMA -->
+        <div id="screen-menu" class="w-full max-w-4xl glass-panel rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center space-y-6">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold tracking-widest uppercase mb-2">
+                Edukasi Interaktif AR — Informatika SMP
+            </div>
+            <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg">
+                COMPUTER RUSH
+            </h2>
+            <p class="text-lg md:text-xl text-cyan-300 font-semibold">
+                2 PLAYER BATTLE — TUNJUK, TANGKAP, JADI JUARA!
+            </p>
+            <p class="text-slate-300 max-w-xl text-sm md:text-base">
+                Uji pemahamanmu tentang <span class="text-white font-bold">Komponen Sistem Komputer</span> (Hardware, Software, Brainware, & Alur Kerja) bersama temanmu secara real-time menggunakan gerakan jari di depan kamera!
+            </p>
+
+            <!-- Settings Quick Panel -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl bg-slate-900/50 p-4 rounded-xl border border-white/5 text-left">
+                <div>
+                    <label class="text-xs text-slate-400 font-semibold block mb-1">Durasi Pertandingan</label>
+                    <select id="settingDuration" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                        <option value="60">60 Detik</option>
+                        <option value="3600" selected>60 Menit</option>
+                        <option value="120">120 Detik</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 font-semibold block mb-1">Tingkat Kesulitan</label>
+                    <select id="settingDifficulty" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                        <option value="easy">Mudah (Lambat)</option>
+                        <option value="normal" selected>Normal (Sedang)</option>
+                        <option value="hard">Sulit (Cepat)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 font-semibold block mb-1">Jumlah Opsi Kartu</label>
+                    <select id="settingOptions" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                        <option value="3">3 Opsi</option>
+                        <option value="4" selected>4 Opsi</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4 pt-4">
+                <button onclick="startCalibration()" class="arcade-btn px-8 py-4 rounded-xl font-extrabold text-lg text-white tracking-wide shadow-lg flex items-center gap-2">
+                    🚀 MULAI GAME (KALIBRASI)
+                </button>
+                <button onclick="openInstructions()" class="px-6 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-base text-slate-200 border border-slate-700 transition">
+                    ⚙️ Aturan & Panduan
+                </button>
+            </div>
+        </div>
+
+        <!-- VIEW 2: KALIBRASI KAMERA & PEMAIN -->
+        <div id="screen-calibration" class="w-full max-w-4xl glass-panel rounded-2xl p-6 shadow-2xl hidden flex-col items-center space-y-4">
+            <h3 class="text-2xl font-extrabold text-cyan-400">KALIBRASI POSISI PEMAIN & KAMERA</h3>
+            <p class="text-slate-300 text-sm text-center max-w-lg">
+                Berdirilah di area masing-masing: <span class="text-cyan-400 font-bold">Player 1 (ZORO)</span> di sebelah kiri dan <span class="text-orange-400 font-bold">Player 2 (XEN)</span> di sebelah kanan. Angkat jari telunjukmu ke depan kamera!
+            </p>
+
+            <div class="relative w-full max-w-2xl aspect-video bg-black/60 rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-inner flex items-center justify-center">
+                <video id="webcam" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover transform -scale-x-100 opacity-60"></video>
+                <canvas id="calibrationCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                
+                <div class="absolute inset-0 grid grid-cols-2 pointer-events-none">
+                    <div class="border-r border-cyan-500/30 p-4 flex flex-col justify-between">
+                        <div class="bg-cyan-950/80 border border-cyan-500/50 rounded-lg p-2 text-center">
+                            <span class="text-xs text-cyan-300 font-bold">PLAYER 1 (ZORO - KIRI)</span>
+                            <p id="p1Status" class="text-xs text-red-400 font-semibold mt-0.5">Tangan Tidak Terdeteksi</p>
+                        </div>
+                        <div class="text-center pb-2">
+                            <span class="text-4xl">👈</span>
+                        </div>
+                    </div>
+                    <div class="p-4 flex flex-col justify-between">
+                        <div class="bg-orange-950/80 border border-orange-500/50 rounded-lg p-2 text-center">
+                            <span class="text-xs text-orange-300 font-bold">PLAYER 2 (XEN - KANAN)</span>
+                            <p id="p2Status" class="text-xs text-red-400 font-semibold mt-0.5">Tangan Tidak Terdeteksi</p>
+                        </div>
+                        <div class="text-center pb-2">
+                            <span class="text-4xl">👉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="camErrorMsg" class="text-red-400 text-sm hidden font-semibold text-center">
+                ⚠️ Kamera tidak dapat diakses atau diblokir. Pastikan Anda menggunakan HTTPS/Localhost dan memberikan izin akses kamera!
+            </div>
+
+            <div id="fallbackNotice" class="text-yellow-400 text-xs hidden font-medium text-center bg-yellow-950/50 p-2 rounded-lg border border-yellow-500/30">
+                💡 Mode Sentuh/Mouse Aktif (Hand Tracking CDN terhambat). Anda dapat bermain menggunakan Sentuhan / Mouse!
+            </div>
+
+            <div class="flex gap-4 pt-2">
+                <button onclick="returnToMenu()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-sm text-slate-300 transition">
+                    ⬅️ Kembali ke Menu
+                </button>
+                <button id="btnStartBattle" onclick="startBattle()" disabled class="px-8 py-2.5 rounded-xl font-extrabold text-sm text-white bg-slate-700 cursor-not-allowed transition shadow-lg">
+                    ⚡ MULAI PERTANDINGAN
+                </button>
+            </div>
+        </div>
+
+        <!-- VIEW 3: ARENA UTAMA PERMAINAN -->
+        <div id="screen-game" class="w-full max-w-6xl h-[78vh] glass-panel rounded-2xl p-4 shadow-2xl hidden flex-col relative overflow-hidden">
+            <div class="flex justify-between items-center bg-slate-900/80 px-4 py-3 rounded-xl border border-white/10 mb-3 z-10">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-cyan-500/20 border border-cyan-400 flex items-center justify-center font-bold text-cyan-300 neon-glow-cyan text-lg">
+                        P1
+                    </div>
+                    <div>
+                        <div class="text-xs text-cyan-400 font-extrabold">ZORO (KIRI)</div>
+                        <div class="text-2xl font-extrabold text-white" id="p1Score">0</div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-xs text-slate-400 font-semibold">WAKTU TERSISA</div>
+                    <div id="gameTimer" class="text-2xl font-extrabold text-yellow-400">90s</div>
+                </div>
+
+                <div class="text-center hidden md:block">
+                    <div class="text-xs text-slate-400 font-semibold">SOAL KE</div>
+                    <div id="qCounter" class="text-xl font-bold text-cyan-300">1 / 30</div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="pauseGame()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold border border-white/10 transition">
+                        ⏸️ Jeda
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-3 text-right">
+                    <div>
+                        <div class="text-xs text-orange-400 font-extrabold">XEN (KANAN)</div>
+                        <div class="text-2xl font-extrabold text-white" id="p2Score">0</div>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-orange-500/20 border border-orange-400 flex items-center justify-center font-bold text-orange-300 neon-glow-orange text-lg">
+                        P2
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-indigo-950/80 via-slate-900/90 to-purple-950/80 border border-indigo-500/30 rounded-xl p-4 mb-3 text-center shadow-lg relative z-10">
+                <span id="questionCategory" class="inline-block px-3 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold mb-1">
+                    Kategori: Hardware
+                </span>
+                <h3 id="questionText" class="text-lg md:text-2xl font-extrabold text-white tracking-wide">
+                    Pertanyaan akan muncul di sini...
+                </h3>
+            </div>
+
+            <div id="gameArena" class="flex-grow relative bg-slate-950/60 rounded-xl border border-white/10 overflow-hidden">
+                <video id="gameWebcam" autoplay playsinline muted class="hidden"></video>
+                <canvas id="gameCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+                <div id="feedbackBanner" class="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-900/95 border-2 px-6 py-4 rounded-2xl shadow-2xl text-center hidden z-30 transition-all duration-300">
+                    <div id="feedbackTitle" class="text-2xl font-extrabold mb-1">BENAR! +10</div>
+                    <div id="feedbackDesc" class="text-sm text-slate-300 max-w-md">Penjelasan singkat materi komputer...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: HASIL AKHIR & STATISTIK -->
+        <div id="screen-result" class="w-full max-w-4xl glass-panel rounded-2xl p-8 shadow-2xl hidden flex-col items-center text-center space-y-6">
+            <div class="text-5xl">🏆</div>
+            <h3 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500" id="winnerText">
+                PERTANDINGAN SELESAI!
+            </h3>
+            <p class="text-slate-300 text-base" id="winnerSubText">Pemenang pertarungan sistem komputer hari ini!</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                <div class="glass-panel p-6 rounded-xl border-cyan-500/40 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-cyan-500/20 px-3 py-1 rounded-bl-xl text-xs font-bold text-cyan-300">ZORO (P1)</div>
+                    <div class="text-4xl font-extrabold text-white mb-2" id="resP1Score">0 Poin</div>
+                    <div class="space-y-1 text-sm text-slate-300 text-left">
+                        <div class="flex justify-between"><span>Jawaban Benar:</span> <strong id="resP1Correct" class="text-green-400">0</strong></div>
+                        <div class="flex justify-between"><span>Jawaban Salah:</span> <strong id="resP1Wrong" class="text-red-400">0</strong></div>
+                        <div class="flex justify-between"><span>Bonus Tercepat (+10):</span> <strong id="resP1Bonus" class="text-yellow-400">0</strong></div>
+                        <div class="flex justify-between"><span>Rata-rata Respon:</span> <strong id="resP1Time" class="text-cyan-300">0.0s</strong></div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl border-orange-500/40 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-orange-500/20 px-3 py-1 rounded-bl-xl text-xs font-bold text-orange-300">XEN (P2)</div>
+                    <div class="text-4xl font-extrabold text-white mb-2" id="resP2Score">0 Poin</div>
+                    <div class="space-y-1 text-sm text-slate-300 text-left">
+                        <div class="flex justify-between"><span>Jawaban Benar:</span> <strong id="resP2Correct" class="text-green-400">0</strong></div>
+                        <div class="flex justify-between"><span>Jawaban Salah:</span> <strong id="resP2Wrong" class="text-red-400">0</strong></div>
+                        <div class="flex justify-between"><span>Bonus Tercepat (+10):</span> <strong id="resP2Bonus" class="text-yellow-400">0</strong></div>
+                        <div class="flex justify-between"><span>Rata-rata Respon:</span> <strong id="resP2Time" class="text-orange-300">0.0s</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4 pt-4">
+                <button onclick="startCalibration()" class="arcade-btn px-8 py-3 rounded-xl font-extrabold text-white shadow-lg">
+                    🔄 MAIN LAGI
+                </button>
+                <button onclick="returnToMenu()" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-slate-200 border border-slate-700 transition">
+                    🏠 KEMBALI KE MENU
+                </button>
+            </div>
+        </div>
+
+        <!-- MODALS -->
+        <div id="modalInstructions" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-2xl rounded-2xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto">
+                <button onclick="closeInstructions()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold">✕</button>
+                <h3 class="text-2xl font-extrabold text-cyan-400 mb-4">📖 CARA BERMAIN & ATURAN</h3>
+                
+                <div class="space-y-4 text-sm text-slate-300 text-left">
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5">
+                        <h4 class="font-bold text-white mb-1">1. Posisi & Kalibrasi Pemain</h4>
+                        <p>Player 1 (Zoro) berada di wilayah kiri layar dan Player 2 (Xen) di wilayah kanan layar. Angkat tangan dan arahkan jari telunjuk ke depan kamera.</p>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5">
+                        <h4 class="font-bold text-white mb-1">2. Interaksi Jari Telunjuk (AR)</h4>
+                        <p>Kursor lingkaran bercahaya (Cyan untuk P1, Oranye untuk P2) mengikuti ujung jari telunjukmu (landmark #8). Sentuh kartu jawaban yang jatuh dari atas untuk memilihnya!</p>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-white/5">
+                        <h4 class="font-bold text-white mb-1">3. Sistem Skor & Penilaian</h4>
+                        <ul class="list-disc pl-5 space-y-1 mt-1">
+                            <li><strong class="text-cyan-300">Jawaban Benar Pertama:</strong> +10 poin (Bonus tercepat).</li>
+                            <li><strong class="text-cyan-300">Jawaban Benar Berikutnya:</strong> +5 poin.</li>
+                            <li><strong class="text-red-400">Jawaban Salah:</strong> -1 poin (Minimal skor 0).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <button onclick="closeInstructions()" class="arcade-btn px-6 py-2.5 rounded-xl font-bold text-white">
+                        Mengerti, Ayo Main!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modalPause" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-md rounded-2xl p-6 text-center space-y-4">
+                <h3 class="text-2xl font-extrabold text-yellow-400">PERMAINAN DIJEDA</h3>
+                <p class="text-slate-300 text-sm">Tarik napas sejenak sebelum melanjutkan pertarungan komputer!</p>
+                <div class="flex flex-col gap-3 pt-2">
+                    <button onclick="resumeGame()" class="arcade-btn w-full py-3 rounded-xl font-bold text-white">
+                        ▶️ Lanjutkan Permainan
+                    </button>
+                    <button onclick="returnToMenu()" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-slate-300 border border-slate-700 transition">
+                        🏠 Keluar ke Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="w-full py-3 px-6 glass-panel border-t border-white/10 text-center text-xs text-slate-400 z-20">
+        Informatika Kelas VIII | SMP Muallimin Wonodadi
+    </footer>
+
+    <script>
+        // Web Audio Synthesizer
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+            playBeep(freq = 440, type = 'sine', duration = 0.1) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+            correct() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } catch(e) {}
+            }
+            wrong() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.setValueAtTime(120, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } catch(e) {}
+            }
+            victory() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880, 987.77, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        setTimeout(() => this.playBeep(freq, 'triangle', 0.2), idx * 100);
+                    });
+                } catch(e) {}
+            }
+        }
+        const sfx = new SoundFX();
+
+        const questionBank = [
+            { category: "Hardware", question: "Apa yang dimaksud dengan hardware?", options: ["Perangkat fisik komputer", "Program komputer", "Pengguna komputer", "Jaringan internet"], correct: 0, explanation: "Hardware adalah seluruh bagian fisik komputer yang dapat dilihat dan disentuh secara nyata." },
+            { category: "Software", question: "Microsoft Word termasuk kategori apa?", options: ["Hardware", "Software aplikasi", "Brainware", "Perangkat input"], correct: 1, explanation: "Microsoft Word adalah software aplikasi yang digunakan untuk mengolah kata." },
+            { category: "Brainware", question: "Siapa yang disebut brainware?", options: ["Prosesor", "Sistem operasi", "Manusia yang mengoperasikan komputer", "Media penyimpanan"], correct: 2, explanation: "Brainware adalah setiap manusia yang terlibat dalam mengoperasikan atau menggunakan sistem komputer." },
+            { category: "Hubungan Komponen", question: "Apa hubungan antara hardware dan software?", options: ["Keduanya tidak berhubungan", "Software mengatur kerja hardware", "Hardware adalah manusia", "Software adalah perangkat fisik"], correct: 1, explanation: "Software berisi instruksi (program) yang berfungsi untuk mengatur dan mengendalikan kerja hardware." },
+            { category: "Alur Kerja", question: "Keyboard termasuk perangkat dalam tahap apa?", options: ["Input", "Proses", "Output", "Storage"], correct: 0, explanation: "Keyboard adalah perangkat input untuk memasukkan data dan perintah ke dalam komputer." },
+            { category: "Alur Kerja", question: "Komponen yang mengolah data dan menjalankan instruksi adalah?", options: ["Monitor", "CPU", "Printer", "Flashdisk"], correct: 1, explanation: "CPU (Central Processing Unit) adalah otak komputer yang memproses data." },
+            { category: "Alur Kerja", question: "Perangkat yang menampilkan hasil pemrosesan data kepada pengguna adalah?", options: ["Keyboard", "Mouse", "Monitor", "Scanner"], correct: 2, explanation: "Monitor adalah perangkat output utama yang menampilkan visual hasil pemrosesan." },
+            { category: "Alur Kerja", question: "Flashdisk termasuk dalam kategori komponen apa?", options: ["Input", "Pemrosesan", "Output", "Storage"], correct: 3, explanation: "Flashdisk adalah media penyimpanan (storage) eksternal berbasis flash memory." },
+            { category: "Alur Kerja", question: "Dina mengetik surat menggunakan keyboard. Tahap tersebut merupakan?", options: ["Input", "Proses", "Output", "Storage"], correct: 0, explanation: "Mengetik melalui keyboard adalah langkah memasukkan data (input)." },
+            { category: "Alur Kerja", question: "File dokumen yang disimpan ke dalam SSD termasuk dalam tahap?", options: ["Input", "Proses", "Output", "Storage"], correct: 3, explanation: "Menyimpan file ke media penyimpanan seperti SSD adalah tahapan penyimpanan (storage)." },
+            { category: "Hardware", question: "Perangkat untuk membaca dokumen kertas menjadi data digital adalah?", options: ["Speaker", "Scanner", "Monitor", "Prosesor"], correct: 1, explanation: "Scanner berfungsi memindai lembaran fisik kertas menjadi file digital." },
+            { category: "Hardware", question: "Perangkat untuk menangkap suara atau audio manusia adalah?", options: ["Microphone", "Printer", "Monitor", "SSD"], correct: 0, explanation: "Microphone adalah perangkat input suara." },
+            { category: "Hardware", question: "Apa fungsi utama dari mouse?", options: ["Mencetak dokumen", "Menggerakkan dan mengklik kursor", "Menyimpan file permanen", "Menghasilkan suara"], correct: 1, explanation: "Mouse digunakan untuk bernavigasi, menggerakkan kursor, dan melakukan klik pada antarmuka." },
+            { category: "Hardware", question: "Apa fungsi utama dari motherboard?", options: ["Mencetak data", "Papan utama tempat komponen komputer terhubung", "Menyimpan data di piringan magnetik", "Menghasilkan suara"], correct: 1, explanation: "Motherboard adalah papan sirkuit pusat yang menghubungkan seluruh komponen hardware." },
+            { category: "Hardware", question: "Apa fungsi utama dari RAM?", options: ["Menyimpan data sementara saat komputer digunakan", "Mencetak dokumen", "Menghasilkan suara", "Menampilkan gambar"], correct: 0, explanation: "RAM menyimpan data instruksi aplikasi yang sedang aktif secara sementara." },
+            { category: "Hardware", question: "Apa ciri khas dari ROM berdasarkan materi sistem komputer?", options: ["Isinya selalu hilang ketika komputer mati", "Menyimpan instruksi dasar dan isinya tidak hilang saat mati", "Digunakan untuk mencetak dokumen", "Berfungsi sebagai speaker"], correct: 1, explanation: "ROM (Read Only Memory) bersifat non-volatile; isinya tetap tersimpan meski komputer dimatikan." },
+            { category: "Hardware", question: "Perangkat penyimpanan yang menggunakan piringan magnetik berputar adalah?", options: ["SSD", "HDD", "RAM", "Monitor"], correct: 1, explanation: "HDD (Hard Disk Drive) menyimpan data menggunakan piringan magnetik berputar." },
+            { category: "Hardware", question: "Perangkat penyimpanan yang menggunakan chip memori tanpa bagian berputar adalah?", options: ["HDD", "SSD", "Printer", "Keyboard"], correct: 1, explanation: "SSD (Solid State Drive) menggunakan teknologi chip flash memori yang sangat cepat." },
+            { category: "Hardware", question: "Perangkat yang mencetak hasil pengolahan data ke media kertas adalah?", options: ["Scanner", "Printer", "Mouse", "CPU"], correct: 1, explanation: "Printer adalah perangkat output cetak fisik." },
+            { category: "Hardware", question: "Perangkat yang menghasilkan suara atau audio dari komputer adalah?", options: ["Speaker", "Monitor", "Scanner", "Keyboard"], correct: 0, explanation: "Speaker adalah perangkat output suara." },
+            { category: "Hardware", question: "Apa fungsi dari proyektor?", options: ["Memproyeksikan tampilan layar ke bidang yang lebih besar", "Mengetik huruf", "Mengolah instruksi", "Menyimpan data permanen"], correct: 0, explanation: "Proyektor menampilkan output visual ke layar dinding atau bidang lebar." },
+            { category: "Software", question: "Sistem operasi berfungsi untuk?", options: ["Mengatur dan mengendalikan sumber daya hardware", "Mencetak kertas secara langsung tanpa perangkat", "Menggantikan seluruh hardware", "Menjadi pengguna komputer"], correct: 0, explanation: "Sistem operasi (OS) adalah software utama yang mengelola hardware dan software aplikasi." },
+            { category: "Software", question: "Manakah di bawah ini yang merupakan sistem operasi?", options: ["Windows", "Microsoft Word", "Keyboard", "Scanner"], correct: 0, explanation: "Windows adalah contoh sistem operasi populer." },
+            { category: "Software", question: "Manakah yang merupakan perangkat lunak pengolah angka (spreadsheet)?", options: ["Microsoft Excel", "Microsoft Word", "Speaker", "Mouse"], correct: 0, explanation: "Microsoft Excel digunakan untuk perhitungan tabel dan angka." },
+            { category: "Software", question: "Aplikasi yang umum digunakan untuk membuat presentasi adalah?", options: ["Microsoft PowerPoint", "Scanner", "SSD", "CPU"], correct: 0, explanation: "Microsoft PowerPoint adalah software pembuat slide presentasi." },
+            { category: "Software", question: "Aplikasi yang digunakan untuk membuat dan menyunting desain grafis adalah?", options: ["Canva", "RAM", "Prosesor", "Motherboard"], correct: 0, explanation: "Canva adalah platform desain grafis berbasis software." },
+            { category: "Software", question: "Manakah contoh perangkat lunak pemrograman (programming)?", options: ["Scratch", "Monitor", "Printer", "Flashdisk"], correct: 0, explanation: "Scratch adalah software edukasi untuk belajar membuat program dan game." },
+            { category: "Software", question: "Google Chrome termasuk dalam kategori?", options: ["Hardware", "Browser atau aplikasi untuk menjelajah web", "Brainware", "Perangkat pemrosesan"], correct: 1, explanation: "Google Chrome adalah web browser untuk mengakses halaman internet." },
+            { category: "Brainware", question: "Siapa yang bertugas merancang dan menulis kode program atau aplikasi?", options: ["Operator", "Programmer", "Pengguna biasa", "Printer"], correct: 1, explanation: "Programmer adalah brainware yang membuat software." },
+            { category: "Brainware", question: "Siapa yang menganalisis kebutuhan pengguna dan merancang arsitektur sistem?", options: ["Analis sistem", "Monitor", "Scanner", "Prosesor"], correct: 0, explanation: "System Analyst bertugas menganalisis dan merancang alur sistem komputer." }
+        ];
+    </script>
+
+    <script>
+        // DOM Elements
+        const screens = {
+            menu: document.getElementById('screen-menu'),
+            calibration: document.getElementById('screen-calibration'),
+            game: document.getElementById('screen-game'),
+            result: document.getElementById('screen-result')
+        };
+        const modalInstructions = document.getElementById('modalInstructions');
+        const modalPause = document.getElementById('modalPause');
+        
+        const settingDuration = document.getElementById('settingDuration');
+        const settingDifficulty = document.getElementById('settingDifficulty');
+        const settingOptions = document.getElementById('settingOptions');
+
+        let soundEnabled = true;
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            sfx.enabled = soundEnabled;
+            document.getElementById('soundStatusText').innerText = soundEnabled ? "Suara: On" : "Suara: Off";
+        }
+
+        function openInstructions() { modalInstructions.classList.remove('hidden'); }
+        function closeInstructions() { modalInstructions.classList.add('hidden'); }
+
+        function showScreen(screenKey) {
+            Object.keys(screens).forEach(k => {
+                if (k === screenKey) {
+                    screens[k].classList.remove('hidden');
+                    screens[k].classList.add('flex');
+                } else {
+                    screens[k].classList.remove('flex');
+                    screens[k].classList.add('hidden');
+                }
+            });
+        }
+
+        function returnToMenu() {
+            gameState.isRunning = false;
+            clearInterval(gameState.timerInterval);
+            if (gameState.animationFrameId) cancelAnimationFrame(gameState.animationFrameId);
+            stopCameraStream();
+            modalPause.classList.add('hidden');
+            showScreen('menu');
+        }
+
+        let handLandmarker = undefined;
+        let webcamRunning = false;
+        let videoElement = document.getElementById('webcam');
+        let gameVideoElement = document.getElementById('gameWebcam');
+        let calibrationCanvas = document.getElementById('calibrationCanvas');
+        let calCtx = calibrationCanvas ? calibrationCanvas.getContext('2d') : null;
+        let gameCanvas = document.getElementById('gameCanvas');
+        let gameCtx = gameCanvas ? gameCanvas.getContext('2d') : null;
+        let mediaStream = null;
+
+        let p1HandPos = { x: -100, y: -100, active: false };
+        let p2HandPos = { x: -100, y: -100, active: false };
+
+        let visionModule = null;
+
+        async function initMediaPipe() {
+            if (handLandmarker) return true;
+            try {
+                // Try dynamic ES module import first (most reliable for CDN delivery)
+                if (!visionModule) {
+                    try {
+                        visionModule = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm");
+                    } catch (e) {
+                        console.warn("ESM import failed, checking global scope...", e);
+                        visionModule = window.Vision || window.tasksVision;
+                    }
+                }
+
+                if (!visionModule || !visionModule.FilesetResolver || !visionModule.HandLandmarker) {
+                    throw new Error("MediaPipe Vision classes not available.");
+                }
+
+                const vision = await visionModule.FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+                );
+
+                handLandmarker = await visionModule.HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numHands: 2
+                });
+                console.log("MediaPipe HandLandmarker initialized successfully!");
+                return true;
+            } catch (err) {
+                console.warn("Hand tracking failed to initialize (falling back to Touch/Mouse mode):", err);
+                const notice = document.getElementById('fallbackNotice');
+                if (notice) notice.classList.remove('hidden');
+                return false;
+            }
+        }
+
+        async function startCameraStream() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 1280, height: 720, facingMode: "user" } 
+                });
+                videoElement.srcObject = mediaStream;
+                gameVideoElement.srcObject = mediaStream;
+                await videoElement.play();
+                await gameVideoElement.play();
+                webcamRunning = true;
+                document.getElementById('camErrorMsg').classList.add('hidden');
+                return true;
+            } catch (err) {
+                console.error("Camera access error:", err);
+                document.getElementById('camErrorMsg').classList.remove('hidden');
+                return false;
+            }
+        }
+
+        // Enable Touch & Mouse pointer fallback when hand tracking is unavailable
+        function setupPointerFallback(canvas) {
+            if (!canvas) return;
+            const handlePointer = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const x = ((clientX - rect.left) / rect.width) * canvas.width;
+                const y = ((clientY - rect.top) / rect.height) * canvas.height;
+
+                if (x < canvas.width / 2) {
+                    p1HandPos = { x, y, active: true };
+                } else {
+                    p2HandPos = { x, y, active: true };
+                }
+            };
+
+            canvas.removeEventListener('mousemove', canvas._pointerHandler);
+            canvas.removeEventListener('touchmove', canvas._pointerHandler);
+            canvas._pointerHandler = handlePointer;
+
+            canvas.addEventListener('mousemove', handlePointer);
+            canvas.addEventListener('touchmove', handlePointer);
+            canvas.addEventListener('touchstart', handlePointer);
+        }
+
+        function stopCameraStream() {
+            webcamRunning = false;
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+        }
+
+        async function startCalibration() {
+            showScreen('calibration');
+            setupPointerFallback(calibrationCanvas);
+            setupPointerFallback(gameCanvas);
+
+            const mpSuccess = await initMediaPipe();
+            const camSuccess = await startCameraStream();
+
+            // Allow calibration and game play even if camera is blocked/failed by enabling touch/mouse fallback
+            if (!camSuccess) {
+                console.log("Running in Touch/Mouse simulation mode.");
+            }
+            requestAnimationFrame(calibrationLoop);
+        }
+
+        function calibrationLoop() {
+            if (screens.calibration.classList.contains('hidden')) return;
+
+            if (calibrationCanvas) {
+                calibrationCanvas.width = (videoElement.videoWidth && videoElement.videoWidth > 0) ? videoElement.videoWidth : 1280;
+                calibrationCanvas.height = (videoElement.videoHeight && videoElement.videoHeight > 0) ? videoElement.videoHeight : 720;
+                calCtx.clearRect(0, 0, calibrationCanvas.width, calibrationCanvas.height);
+
+                if (handLandmarker && webcamRunning && videoElement.readyState >= 2) {
+                    try {
+                        const startTimeMs = performance.now();
+                        const results = handLandmarker.detectForVideo(videoElement, startTimeMs);
+
+                        p1HandPos.active = false;
+                        p2HandPos.active = false;
+
+                        if (results.landmarks) {
+                            for (const landmarks of results.landmarks) {
+                                const tip = landmarks[8];
+                                const x = (1 - tip.x) * calibrationCanvas.width;
+                                const y = tip.y * calibrationCanvas.height;
+
+                                if (x < calibrationCanvas.width / 2) {
+                                    p1HandPos = { x, y, active: true };
+                                } else {
+                                    p2HandPos = { x, y, active: true };
+                                }
+                            }
+                        }
+                    } catch(e) {}
+                }
+
+                if (p1HandPos.active) drawHandCursor(calCtx, p1HandPos.x, p1HandPos.y, '#06b6d4', 'P1 ZORO');
+                if (p2HandPos.active) drawHandCursor(calCtx, p2HandPos.x, p2HandPos.y, '#f97316', 'P2 XEN');
+            }
+
+            const p1Status = document.getElementById('p1Status');
+            const p2Status = document.getElementById('p2Status');
+            const btnStart = document.getElementById('btnStartBattle');
+
+            if (p1HandPos.active) {
+                p1Status.innerText = "Pemain 1 Aktif ✓";
+                p1Status.className = "text-xs text-cyan-400 font-bold mt-0.5";
+            } else {
+                p1Status.innerText = "Arahkan Telunjuk / Sentuh Layar";
+                p1Status.className = "text-xs text-slate-400 font-semibold mt-0.5";
+            }
+
+            if (p2HandPos.active) {
+                p2Status.innerText = "Pemain 2 Aktif ✓";
+                p2Status.className = "text-xs text-orange-400 font-bold mt-0.5";
+            } else {
+                p2Status.innerText = "Arahkan Telunjuk / Sentuh Layar";
+                p2Status.className = "text-xs text-slate-400 font-semibold mt-0.5";
+            }
+
+            // Allow starting if either tracking works or user uses touch/mouse fallback
+            btnStart.disabled = false;
+            btnStart.className = "arcade-btn px-8 py-2.5 rounded-xl font-extrabold text-sm text-white shadow-lg cursor-pointer";
+
+            requestAnimationFrame(calibrationLoop);
+        }
+
+        function drawHandCursor(ctx, x, y, color, label) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, 24, 0, 2 * Math.PI);
+            ctx.fillStyle = color + '44';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            ctx.font = "bold 14px 'Plus Jakarta Sans'";
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#000';
+            ctx.shadowBlur = 4;
+            ctx.fillText(label, x + 30, y + 5);
+            ctx.restore();
+        }
+
+        // Game Core Engine State
+        let gameState = {
+            isRunning: false,
+            isPaused: false,
+            duration: 90,
+            timeLeft: 90,
+            difficulty: 'normal',
+            optionCount: 4,
+            currentQuestionIndex: 0,
+            shuffledQuestions: [],
+            activeCards: [],
+            p1Score: 0,
+            p2Score: 0,
+            p1CorrectCount: 0,
+            p1WrongCount: 0,
+            p1BonusCount: 0,
+            p1ResponseTimes: [],
+            p2CorrectCount: 0,
+            p2WrongCount: 0,
+            p2BonusCount: 0,
+            p2ResponseTimes: [],
+            currentQuestionAnswered: false,
+            questionStartTime: 0,
+            animationFrameId: null,
+            timerInterval: null
+        };
+
+        function startBattle() {
+            showScreen('game');
+            gameState.duration = parseInt(settingDuration.value);
+            gameState.timeLeft = gameState.duration;
+            gameState.difficulty = settingDifficulty.value;
+            gameState.optionCount = parseInt(settingOptions.value);
+
+            gameState.p1Score = 0;
+            gameState.p2Score = 0;
+            gameState.p1CorrectCount = 0;
+            gameState.p1WrongCount = 0;
+            gameState.p1BonusCount = 0;
+            gameState.p1ResponseTimes = [];
+            gameState.p2CorrectCount = 0;
+            gameState.p2WrongCount = 0;
+            gameState.p2BonusCount = 0;
+            gameState.p2ResponseTimes = [];
+
+            gameState.shuffledQuestions = [...questionBank].sort(() => Math.random() - 0.5);
+            gameState.currentQuestionIndex = 0;
+
+            gameState.isRunning = true;
+            gameState.isPaused = false;
+
+            updateHUD();
+            loadNextQuestion();
+
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                if (!gameState.isPaused && gameState.isRunning) {
+                    gameState.timeLeft--;
+                    document.getElementById('gameTimer').innerText = gameState.timeLeft + 's';
+                    if (gameState.timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+
+            gameState.animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function pauseGame() {
+            gameState.isPaused = true;
+            modalPause.classList.remove('hidden');
+        }
+
+        function resumeGame() {
+            gameState.isPaused = false;
+            modalPause.classList.add('hidden');
+        }
+
+        function loadNextQuestion() {
+            if (gameState.currentQuestionIndex >= gameState.shuffledQuestions.length) {
+                gameState.shuffledQuestions = [...questionBank].sort(() => Math.random() - 0.5);
+                gameState.currentQuestionIndex = 0;
+            }
+
+            // ✅ FIX: Pastikan ukuran canvas sudah benar SEBELUM menghitung posisi kartu
+            if (gameCanvas) {
+                const cw = gameCanvas.clientWidth;
+                const ch = gameCanvas.clientHeight;
+                if (cw > 0 && gameCanvas.width !== cw) gameCanvas.width = cw;
+                if (ch > 0 && gameCanvas.height !== ch) gameCanvas.height = ch;
+            }
+
+            const qData = gameState.shuffledQuestions[gameState.currentQuestionIndex];
+            document.getElementById('questionCategory').innerText = "Kategori: " + qData.category;
+            document.getElementById('questionText').innerText = qData.question;
+            document.getElementById('qCounter').innerText = (gameState.currentQuestionIndex + 1) + " / " + gameState.shuffledQuestions.length;
+
+            gameState.currentQuestionAnswered = false;
+            gameState.questionStartTime = performance.now();
+
+            gameState.activeCards = [];
+            let rawOptions = qData.options.slice(0, gameState.optionCount);
+            let correctText = qData.options[qData.correct];
+
+            let fallSpeed = 0.6;
+            if (gameState.difficulty === 'easy') fallSpeed = 0.4;
+            if (gameState.difficulty === 'hard') fallSpeed = 0.9;
+
+            // ✅ FIX: Gunakan clientWidth (ukuran render aktual), bukan width yang mungkin masih default
+            const arenaWidth = (gameCanvas && gameCanvas.clientWidth) ? gameCanvas.clientWidth : 1000;
+            const halfWidth = arenaWidth / 2;
+
+            [0, 1].forEach(side => {
+                let sideOptions = rawOptions.map(opt => ({
+                    text: opt,
+                    isCorrect: (opt === correctText)
+                })).sort(() => Math.random() - 0.5);
+
+                const countInSide = sideOptions.length;
+                const cardWidth = Math.min(180, (halfWidth - 30) / countInSide);
+                const sideOffset = side * halfWidth;
+                const spacing = (halfWidth - (cardWidth * countInSide)) / (countInSide + 1);
+
+                sideOptions.forEach((opt, idx) => {
+                    let x = sideOffset + spacing + idx * (cardWidth + spacing) + cardWidth / 2;
+                    gameState.activeCards.push({
+                        text: opt.text,
+                        isCorrect: opt.isCorrect,
+                        playerSide: side + 1,
+                        x: x,
+                        y: -80 - (Math.random() * 30),
+                        width: cardWidth,
+                        height: 70,
+                        speed: fallSpeed + (Math.random() * 0.15),
+                         hitBy: { 1: false, 2: false }
+                    });
+                });
+            });
+        }
+
+        function gameLoop() {
+            if (!gameState.isRunning) return;
+
+            if (!gameState.isPaused) {
+                if (gameCanvas && gameVideoElement.readyState >= 2) {
+                    gameCanvas.width = gameCanvas.clientWidth || 1000;
+                    gameCanvas.height = gameCanvas.clientHeight || 600;
+
+                    gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+                    p1HandPos.active = false;
+                    p2HandPos.active = false;
+
+                    if (handLandmarker) {
+                        try {
+                            const results = handLandmarker.detectForVideo(gameVideoElement, performance.now());
+                            if (results.landmarks) {
+                                for (const landmarks of results.landmarks) {
+                                    const tip = landmarks[8];
+                                    const x = (1 - tip.x) * gameCanvas.width;
+                                    const y = tip.y * gameCanvas.height;
+
+                                    if (x < gameCanvas.width / 2) {
+                                        p1HandPos = { x, y, active: true };
+                                    } else {
+                                        p2HandPos = { x, y, active: true };
+                                    }
+                                }
+                            }
+                        } catch(e) {}
+                    }
+
+                    // Gambar garis pembatas tengah arena (P1 vs P2)
+                    gameCtx.save();
+                    gameCtx.setLineDash([8, 8]);
+                    gameCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    gameCtx.lineWidth = 2;
+                    gameCtx.beginPath();
+                    gameCtx.moveTo(gameCanvas.width / 2, 0);
+                    gameCtx.lineTo(gameCanvas.width / 2, gameCanvas.height);
+                    gameCtx.stroke();
+                    gameCtx.restore();
+
+                    let cardsReachedBottom = false;
+                    gameState.activeCards.forEach(card => {
+                        card.y += card.speed;
+                        if (card.y > gameCanvas.height + 50) {
+                            cardsReachedBottom = true;
+                        }
+                        // Lewati render khusus atau beri tanda jika kartu sudah disentuh salah
+                        const wasWrong = card.hitBy && (card.hitBy[1] || card.hitBy[2]) && !card.isCorrect;
+                        
+                        gameCtx.save();
+                        // Dihilangkan petunjuk jawaban benar (menggunakan style netral dan seragam)
+                        gameCtx.shadowColor = 'rgba(99, 102, 241, 0.2)';
+                        gameCtx.shadowBlur = 12;
+                        gameCtx.fillStyle = wasWrong ? 'rgba(60, 20, 20, 0.85)' : 'rgba(15, 23, 42, 0.9)';
+                        gameCtx.strokeStyle = wasWrong ? '#ef4444' : '#6366f1';;
+                        gameCtx.lineWidth = 2;
+
+                        const rx = card.x - card.width / 2;
+                        const ry = card.y;
+                        const rw = card.width;
+                        const rh = card.height;
+
+                        gameCtx.beginPath();
+                        gameCtx.roundRect(rx, ry, rw, rh, 12);
+                        gameCtx.fill();
+                        gameCtx.stroke();
+
+                        gameCtx.fillStyle = '#ffffff';
+                        gameCtx.font = "bold 13px 'Plus Jakarta Sans'";
+                        gameCtx.textAlign = 'center';
+                        gameCtx.textBaseline = 'middle';
+                        
+                        wrapText(gameCtx, card.text, card.x, card.y + card.height / 2, card.width - 16, 16);
+                        gameCtx.restore();
+                    });
+
+                    if (cardsReachedBottom && !gameState.currentQuestionAnswered) {
+                        gameState.currentQuestionAnswered = true;
+                        sfx.wrong();
+                        showFeedbackBanner("WAKTU HABIS!", "Kartu jawaban melewati batas bawah.", false);
+                        setTimeout(() => {
+                            hideFeedbackBanner();
+                            gameState.currentQuestionIndex++;
+                            loadNextQuestion();
+                        }, 1200);
+                    }
+
+                    if (!gameState.currentQuestionAnswered) {
+                        const now = performance.now();
+                        const responseDuration = (now - gameState.questionStartTime) / 1000;
+
+                        if (p1HandPos.active) {
+                            drawHandCursor(gameCtx, p1HandPos.x, p1HandPos.y, '#06b6d4', 'P1 ZORO');
+                            
+                            gameState.activeCards.forEach(card => {
+                                if (card.playerSide === 1) { // Hanya merespon kartu di wilayah P1
+                                    const rx = card.x - card.width / 2;
+                                    const ry = card.y;
+                                    if (p1HandPos.x >= rx && p1HandPos.x <= rx + card.width &&
+                                        p1HandPos.y >= ry && p1HandPos.y <= ry + card.height) {
+                                        handlePlayerAnswer(1, card, responseDuration);
+                                    }
+                                }
+                            });
+                        }
+
+                        if (p2HandPos.active) {
+                            drawHandCursor(gameCtx, p2HandPos.x, p2HandPos.y, '#f97316', 'P2 XEN');
+
+                            gameState.activeCards.forEach(card => {
+                                if (card.playerSide === 2) { // Hanya merespon kartu di wilayah P2
+                                    const rx = card.x - card.width / 2;
+                                    const ry = card.y;
+                                    if (p2HandPos.x >= rx && p2HandPos.x <= rx + card.width &&
+                                        p2HandPos.y >= ry && p2HandPos.y <= ry + card.height) {
+                                        handlePlayerAnswer(2, card, responseDuration);
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        if (p1HandPos.active) drawHandCursor(gameCtx, p1HandPos.x, p1HandPos.y, '#06b6d4', 'P1 ZORO');
+                        if (p2HandPos.active) drawHandCursor(gameCtx, p2HandPos.x, p2HandPos.y, '#f97316', 'P2 XEN');
+                    }
+                }
+            }
+
+            gameState.animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function handlePlayerAnswer(playerNum, card, responseTime) {
+            if (gameState.currentQuestionAnswered) return;
+
+            // Cegah pemain yang sama kena penalti berulang di kartu yang sama
+            if (!card.hitBy) card.hitBy = { 1: false, 2: false };
+            if (card.hitBy[playerNum]) return;
+            card.hitBy[playerNum] = true;
+
+            const qData = gameState.shuffledQuestions[gameState.currentQuestionIndex];
+
+            if (card.isCorrect) {
+                // ✅ Jawaban BENAR: soal selesai, lanjut soal berikutnya
+                gameState.currentQuestionAnswered = true;
+                sfx.correct();
+
+                if (playerNum === 1) {
+                    gameState.p1Score += 10;
+                    gameState.p1CorrectCount++;
+                    gameState.p1BonusCount++;
+                    gameState.p1ResponseTimes.push(responseTime);
+                    showFeedbackBanner("P1 ZORO BENAR! +10", qData.explanation, true);
+                } else {
+                    gameState.p2Score += 10;
+                    gameState.p2CorrectCount++;
+                    gameState.p2BonusCount++;
+                    gameState.p2ResponseTimes.push(responseTime);
+                    showFeedbackBanner("P2 XEN BENAR! +10", qData.explanation, true);
+                }
+
+                updateHUD();
+
+                setTimeout(() => {
+                    hideFeedbackBanner();
+                    gameState.currentQuestionIndex++;
+                    loadNextQuestion();
+                }, 1800);
+
+            } else {
+                // ❌ Jawaban SALAH: hanya kurangi poin, SOAL TETAP BERJALAN
+                sfx.wrong();
+
+                if (playerNum === 1) {
+                    gameState.p1Score = Math.max(0, gameState.p1Score - 1);
+                    gameState.p1WrongCount++;
+                    showFeedbackBanner("P1 ZORO SALAH! -1", "Coba pilih jawaban lain!", false);
+                } else {
+                    gameState.p2Score = Math.max(0, gameState.p2Score - 1);
+                    gameState.p2WrongCount++;
+                    showFeedbackBanner("P2 XEN SALAH! -1", "Coba pilih jawaban lain!", false);
+                }
+
+                updateHUD();
+
+                // Banner penalti hilang sendiri, soal TIDAK di-next
+                setTimeout(() => {
+                    if (!gameState.currentQuestionAnswered) hideFeedbackBanner();
+                }, 900);
+            }
+        }
+
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let lines = [];
+
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = ctx.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            let startY = y - ((lines.length - 1) * lineHeight) / 2;
+            for(let k = 0; k < lines.length; k++) {
+                ctx.fillText(lines[k], x, startY + (k * lineHeight));
+            }
+        }
+
+        function showFeedbackBanner(title, desc, isSuccess) {
+            const banner = document.getElementById('feedbackBanner');
+            const titleEl = document.getElementById('feedbackTitle');
+            const descEl = document.getElementById('feedbackDesc');
+
+            titleEl.innerText = title;
+            titleEl.className = isSuccess ? "text-2xl font-extrabold mb-1 text-cyan-400" : "text-2xl font-extrabold mb-1 text-red-400";
+            banner.className = isSuccess ? 
+                "absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-900/95 border-2 border-cyan-500 px-6 py-4 rounded-2xl shadow-2xl text-center z-30 transition-all duration-300 neon-glow-cyan" :
+                "absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-900/95 border-2 border-red-500 px-6 py-4 rounded-2xl shadow-2xl text-center z-30 transition-all duration-300";
+
+            descEl.innerText = desc;
+            banner.classList.remove('hidden');
+        }
+
+        function hideFeedbackBanner() {
+            document.getElementById('feedbackBanner').classList.add('hidden');
+        }
+
+        function updateHUD() {
+            document.getElementById('p1Score').innerText = gameState.p1Score;
+            document.getElementById('p2Score').innerText = gameState.p2Score;
+        }
+
+        function endGame() {
+            gameState.isRunning = false;
+            clearInterval(gameState.timerInterval);
+            if (gameState.animationFrameId) cancelAnimationFrame(gameState.animationFrameId);
+            stopCameraStream();
+
+            sfx.victory();
+            showScreen('result');
+
+            document.getElementById('resP1Score').innerText = gameState.p1Score + " Poin";
+            document.getElementById('resP1Correct').innerText = gameState.p1CorrectCount;
+            document.getElementById('resP1Wrong').innerText = gameState.p1WrongCount;
+            document.getElementById('resP1Bonus').innerText = gameState.p1BonusCount;
+            
+            const p1Avg = gameState.p1ResponseTimes.length > 0 ? 
+                (gameState.p1ResponseTimes.reduce((a,b)=>a+b,0) / gameState.p1ResponseTimes.length).toFixed(1) + "s" : "0.0s";
+            document.getElementById('resP1Time').innerText = p1Avg;
+
+            document.getElementById('resP2Score').innerText = gameState.p2Score + " Poin";
+            document.getElementById('resP2Correct').innerText = gameState.p2CorrectCount;
+            document.getElementById('resP2Wrong').innerText = gameState.p2WrongCount;
+            document.getElementById('resP2Bonus').innerText = gameState.p2BonusCount;
+
+            const p2Avg = gameState.p2ResponseTimes.length > 0 ? 
+                (gameState.p2ResponseTimes.reduce((a,b)=>a+b,0) / gameState.p2ResponseTimes.length).toFixed(1) + "s" : "0.0s";
+            document.getElementById('resP2Time').innerText = p2Avg;
+
+            const winnerText = document.getElementById('winnerText');
+            const winnerSubText = document.getElementById('winnerSubText');
+
+            if (gameState.p1Score > gameState.p2Score) {
+                winnerText.innerText = "PLAYER 1 (ZORO) MENANG! 🏆";
+                winnerSubText.innerText = "Zoro menguasai sistem komponen komputer dengan luar biasa!";
+            } else if (gameState.p2Score > gameState.p1Score) {
+                winnerText.innerText = "PLAYER 2 (XEN) MENANG! 🏆";
+                winnerSubText.innerText = "Xen menunjukkan ketangkasan dan pengetahuan sistem komputer terbaik!";
+            } else {
+                winnerText.innerText = "HASIL SERI (DRAW)! 🤝";
+                winnerSubText.innerText = "Kedua pemain memiliki kemampuan dan kecepatan yang sama hebatnya!";
+            }
+        }
+    </script>
+</body>
+</html>
